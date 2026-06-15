@@ -15,13 +15,19 @@ fn clear_screen() {
     println!("\x1B[3J\x1B[2J\x1B[1;1H");
 }
 
-fn list_tasks(task_list: &HashMap<String, String>) {
+enum Status {
+    ToDo,
+    InProgress,
+    Done
+}
+
+fn list_tasks(task_list: &HashMap<String, (String,Status)>) {
     let mut is_done = false;
     while is_done == false {
         clear_screen();
         println!("Tasks:");
         for i in 1..= task_list.len() {
-            println!("{}. {}", i, task_list.get(&(i).to_string()).expect("should have a key"))    
+            println!("{}. {}, {}", i, task_list.get(&(i).to_string()).expect("should have a key").0, task_list.get(&(i).to_string()).expect("should have a key").1)    
         }
         println!("\nDone? [y/n]");
         let mut input = String::new(); 
@@ -33,14 +39,14 @@ fn list_tasks(task_list: &HashMap<String, String>) {
     clear_screen();
 }
 
-fn create_task(task_list: &mut HashMap<String, String>) {
+fn create_task(task_list: &mut HashMap<String, (String,String)>) {
     clear_screen();
     println!("What task do you want to add?");
     let mut new_task = String::new(); 
     io::stdin().read_line(&mut new_task).expect("User should insert task");
-    task_list.insert((task_list.len()+1).to_string(), new_task);
+    task_list.insert((task_list.len()+1).to_string(), new_task, );
     println!();
-    println!("Added task: {}", task_list.get(&((task_list.len()).to_string())).expect("Task should be added"));
+    println!("Added task: {}, {}", task_list.get(&((task_list.len()).to_string())).expect("Task should be added").0, task_list.get(&((task_list.len()).to_string())).expect("Task should be added").1);
     sleep(time::Duration::from_secs(1));
     clear_screen();
 }
@@ -75,12 +81,15 @@ fn main() {
     println!();
 
     let contents: String = fs::read_to_string("tasks.txt").expect("File can't be read");
-    let mut task_list: HashMap<String, String> = HashMap::new();
+    let mut task_list: HashMap<String, (String,String)> = HashMap::new();
 
     let mut counter= 0;
     for item in contents.lines() {
         counter += 1;
-        task_list.insert(counter.to_string(), item.to_string());
+        let split_item = item.split_once(',').expect("String should be delimited by a comma");
+        let split_one = split_item.0;
+        let split_two = split_item.1; 
+        task_list.insert(counter.to_string(), (split_one.to_string(), split_two.to_string()));
     }
 
     while is_done == false {
