@@ -147,10 +147,18 @@ fn update_task(task_list: &mut HashMap<String, (String,Status)>) {
             io::stdin().read_line(&mut new_status).expect("User should select a task");
             let new_status = new_status.trim_end().to_string();
             println!();
-
-            task_list.insert(task_selection, (task_name, Status::try_from(new_status).expect("should be a valid status")));
-            println!("Task inserted!");
-            println!();
+            
+            match Status::try_from(new_status) {
+                Ok(status) => {
+                    task_list.insert(task_selection, (task_name, Status::try_from(status).expect("status")));
+                    println!("Task inserted!");
+                    println!();
+                }
+                Err(_err) => {
+                    println!("Not a valid status!");
+                    println!();
+                }
+            };
         } else {
             println!("Not a valid task number!")
         }
